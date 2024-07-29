@@ -1,0 +1,256 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <title>React App</title>
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel" src="script.js">
+    </script>
+
+  </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Customer Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #343a40;
+        }
+        form {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        form label {
+            display: block;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        form input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        form button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        form button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        td {
+            color: #495057;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        button.checkout, button.remove {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button.checkout {
+            background-color: #28a745;
+            color: white;
+        }
+        button.checkout:hover {
+            background-color: #218838;
+        }
+        button.remove {
+            background-color: #dc3545;
+            color: white;
+        }
+        button.remove:hover {
+            background-color: #c82333;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- React and ReactDOM -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const totalCapacity = 50;
+            const [seatsLeft, setSeatsLeft] = useState(totalCapacity);
+            const [customers, setCustomers] = useState([]);
+
+            const handleFormSubmit = (event) => {
+                event.preventDefault();
+                const guestCount = parseInt(event.target.guestCount.value);
+                const name = event.target.name.value;
+                const phone = event.target.phone.value;
+
+                if (guestCount > seatsLeft) {
+                    alert("Guest count exceeds capacity.");
+                    return;
+                }
+
+                if (customers.some(customer => customer.name === name)) {
+                    alert("Customer already exists.");
+                    return;
+                }
+
+                const newCustomer = {
+                    id: Date.now(),
+                    guestCount,
+                    name,
+                    phone,
+                    checkIn: new Date().toLocaleString(),
+                    checkOut: null,
+                    status: 'Click to Checkout'
+                };
+
+                setSeatsLeft(seatsLeft - guestCount);
+                setCustomers([newCustomer, ...customers]);
+
+                event.target.reset();
+            };
+
+            const handleCheckout = (customer) => {
+                setCustomers(customers.map(c => 
+                    c.id === customer.id ? { ...c, checkOut: new Date().toLocaleString(), status: 'Checked Out' } : c
+                ));
+                setSeatsLeft(seatsLeft + customer.guestCount);
+            };
+
+            const handleDelete = (customer) => {
+                if (customer.status !== 'Checked Out') {
+                    setSeatsLeft(seatsLeft + customer.guestCount);
+                }
+                setCustomers(customers.filter(c => c.id !== customer.id));
+            };
+
+            return (
+                <div>
+                    <h1>Restaurant Customer Management</h1>
+                    <div>
+                        <p>Total Capacity: {totalCapacity}</p>
+                        <p>Seats Left: {seatsLeft}</p>
+                    </div>
+                    <form onSubmit={handleFormSubmit}>
+                        <label>
+                            Guest Count:
+                            <input type="number" name="guestCount" required />
+                        </label>
+                        <label>
+                            Name:
+                            <input type="text" name="name" required />
+                        </label>
+                        <label>
+                            Phone:
+                            <input type="tel" name="phone" required />
+                        </label>
+                        <button type="submit">Submit</button>
+                    </form>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Count</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Status</th>
+                                <th>Remove Entry</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {customers.map(customer => (
+                                <tr key={customer.id}>
+                                    <td>{customer.guestCount}</td>
+                                    <td>{customer.name}</td>
+                                    <td>{customer.phone}</td>
+                                    <td>{customer.checkIn}</td>
+                                    <td>{customer.checkOut}</td>
+                                    <td>
+                                        {customer.status === 'Click to Checkout' ? (
+                                            <button className="checkout" onClick={() => handleCheckout(customer)}>
+                                                {customer.status}
+                                            </button>
+                                        ) : (
+                                            customer.status
+                                        )}
+                                    </td>
+                                    <td>
+                                        <button className="remove" onClick={() => handleDelete(customer)}>Delete</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
+
